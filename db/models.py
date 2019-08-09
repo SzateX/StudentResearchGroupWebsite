@@ -129,6 +129,9 @@ class Hardware(models.Model):
 def assign_permisions_hardware(sender, instance: Hardware, created: bool, **kwargs):
     if created:
         assign_all_perms_to_staff(instance)
+        for user in User.objects.all():
+            if user.username is not 'AnonymousUser':
+                assign_permissions_to_instance(['view'], user, instance)
 
 
 class Project(models.Model):
