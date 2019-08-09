@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>Sprzęt</h1>
+{% for hardware in hardwares %}
+    {{ hardware.title }}
+    <a href="{% url 'hardware_detail' hardware.pk %}">Szczegóły</a>
+    <a href="{% url 'hardware_edit' hardware.pk %}">Edytuj</a>
+    <a href="{% url 'hardware_delete' hardware.pk %}">Usuń</a><br><br>
+{% endfor %}
+<a href="{% url 'hardware_create'%}">Dodaj</a>
+</body>
+</html>

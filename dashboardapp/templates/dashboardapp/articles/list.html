@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>Twoje artykuły</h1>
+    {% for article in articles %}
+        {{ article.title }} <a href="{% url 'article_detail' article.pk %}">Szczegóły</a> <a href="{% url 'article_edit' article.pk %}">Edytuj</a> <a href="{% url 'article_delete' article.pk %}">Usuń</a><br><br>
+    {% endfor %}
+    <a href="{% url 'article_create'%}">Dodaj artykuł</a><br>
+    Użyszkodnik: {{ user.username }}
+</body>
+</html>

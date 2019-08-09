@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form method="post">
+    <a href="{% url 'article_list' %}">Artykuły</a>
+    <a href="{% url 'hardware_list' %}">Sprzęt</a>
+    <a href="{% url 'project_list' %}">Projekty</a>
+    <a href="{% url 'section_list' %}">Sekcje</a>
+    <a href="{% url 'gallery_list' %}">Galeria</a><br><br>
+    <a href="{% url 'logout' %}">Wyloguj</a>
+</form>
+</body>
+</html>

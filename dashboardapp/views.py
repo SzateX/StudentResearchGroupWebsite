@@ -6,103 +6,107 @@ from django.contrib.auth.views import LoginView, LogoutView
 from db.models import *
 
 
-login_url = ''
+login_url = '/dashboard/login'
 
 
-class StrippedDashboardListView(PermissionListMixin, ListView):
+class StrippedDashboardListView(LoginRequiredMixin, PermissionListMixin,
+                                ListView):
     login_url = login_url
 
     def get_required_permissions(self, request=None):
-        return 'db.view_' + self.model.__name__.tolower()
+        return 'db.view_' + self.model.__name__.lower()
 
     def get_template_names(self):
-        name = "dashboardapp/%ss/list.html" % self.model.__name__.tolower()
+        name = "dashboardapp/%ss/list.html" % self.model.__name__.lower()
         return [name]
 
     def get_context_object_name(self, object_list):
-        return self.model.__name__.tolower() + "s"
+        return self.model.__name__.lower() + "s"
 
 
-class PermittedDashboardListView(PermissionRequiredMixin, ListView):
-    login_url = login_url
-    raise_exception = True
-
-    def get_required_permissions(self, request=None):
-        return 'db.view_' + self.model.__name__.tolower()
-
-    def get_template_names(self):
-        name = "dashboardapp/%ss/list.html" % self.model.__name__.tolower()
-        return [name]
-
-    def get_context_object_name(self, object_list):
-        return self.model.__name__.tolower() + "s"
-
-
-class PermittedDashboardDetailView(PermissionRequiredMixin, DetailView):
+class PermittedDashboardListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     login_url = login_url
     raise_exception = True
 
     def get_required_permissions(self, request=None):
-        return 'db.view_' + self.model.__name__.tolower()
+        return 'db.view_' + self.model.__name__.lower()
 
     def get_template_names(self):
-        name = "dashboardapp/%ss/detail.html" % self.model.__name__.tolower()
+        name = "dashboardapp/%ss/list.html" % self.model.__name__.lower()
         return [name]
 
     def get_context_object_name(self, object_list):
-        return self.model.__name__.tolower()
+        return self.model.__name__.lower() + "s"
 
 
-class PermittedDashboardCreateView(PermissionRequiredMixin, CreateView):
+class PermittedDashboardDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
     login_url = login_url
     raise_exception = True
 
     def get_required_permissions(self, request=None):
-        return 'db.add_' + self.model.__name__.tolower()
+        return 'db.view_' + self.model.__name__.lower()
 
     def get_template_names(self):
-        name = "dashboardapp/%ss/create.html" % self.model.__name__.tolower()
+        name = "dashboardapp/%ss/detail.html" % self.model.__name__.lower()
         return [name]
 
     def get_context_object_name(self, object_list):
-        return self.model.__name__.tolower()
+        return self.model.__name__.lower()
 
 
-class PermittedDashboardUpdateView(PermissionRequiredMixin, UpdateView):
+class PermittedDashboardCreateView(LoginRequiredMixin, CreateView):
+    login_url = login_url
+
+    def get_template_names(self):
+        name = "dashboardapp/%ss/create.html" % self.model.__name__.lower()
+        return [name]
+
+    def get_context_object_name(self, object_list):
+        return self.model.__name__.lower()
+
+
+class PermittedDashboardUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     login_url = login_url
     raise_exception = True
 
     def get_required_permissions(self, request=None):
-        return 'db.change_' + self.model.__name__.tolower()
+        return 'db.change_' + self.model.__name__.lower()
 
     def get_template_names(self):
-        name = "dashboardapp/%ss/update.html" % self.model.__name__.tolower()
+        name = "dashboardapp/%ss/update.html" % self.model.__name__.lower()
         return [name]
 
     def get_context_object_name(self, object_list):
-        return self.model.__name__.tolower()
+        return self.model.__name__.lower()
 
 
-class PermittedDashboardDeleteView(PermissionRequiredMixin, DeleteView):
+class PermittedDashboardDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     login_url = login_url
     raise_exception = True
 
     def get_required_permissions(self, request=None):
-        return 'db.delete_' + self.model.__name__.tolower()
+        return 'db.delete_' + self.model.__name__.lower()
 
     def get_template_names(self):
-        name = "dashboardapp/%ss/delete.html" % self.model.__name__.tolower()
+        name = "dashboardapp/%ss/delete.html" % self.model.__name__.lower()
         return [name]
 
     def get_context_object_name(self, object_list):
-        return self.model.__name__.tolower()
+        return self.model.__name__.lower()
 
 
 class DashboardLoginView(LoginView):
     template_name = 'dashboardapp/login.html'
 
+    def get_redirect_url(self):
+        redirect_url = super(DashboardLoginView, self).get_redirect_url()
+        if redirect_url == '':
+            return '/dashboard/'
+        return redirect_url
 
-class DashboardLogoutView(LoginView):
+
+class DashboardLogoutView(LoginRequiredMixin, LogoutView):
+    login_url = login_url
     template_name = 'dashboardapp/logout.html'
 
 
@@ -121,10 +125,14 @@ class ArticleDetailView(PermittedDashboardDetailView):
 
 class ArticleCreateView(PermittedDashboardCreateView):
     model = Article
+    fields = '__all__'
+    success_url = '/dashboard/articles'
 
 
 class ArticleUpdateView(PermittedDashboardUpdateView):
     model = Article
+    fields = '__all__'
+    success_url = '/dashboard/articles'
 
 
 class ArticleDeleteView(PermittedDashboardDeleteView):
@@ -137,10 +145,14 @@ class HardwareListView(PermittedDashboardListView):
 
 class HardwareCreateView(PermittedDashboardCreateView):
     model = Hardware
+    fields = '__all__'
+    success_url = '/dashboard/hardware'
 
 
 class HardwareUpdateView(PermittedDashboardUpdateView):
     model = Hardware
+    fields = '__all__'
+    success_url = '/dashboard/hardware'
 
 
 class HardwareDeleteView(PermittedDashboardDeleteView):
@@ -157,10 +169,14 @@ class ProjectDetailView(PermittedDashboardDetailView):
 
 class ProjectCreateView(PermittedDashboardCreateView):
     model = Project
+    fields = '__all__'
+    success_url = '/dashboard/projects'
 
 
 class ProjectUpdateView(PermittedDashboardUpdateView):
     model = Project
+    fields = '__all__'
+    success_url = '/dashboard/projects'
 
 
 class ProjectDeleteView(PermittedDashboardDeleteView):
@@ -177,10 +193,14 @@ class SectionDetailView(PermittedDashboardDetailView):
 
 class SectionCreateView(PermittedDashboardCreateView):
     model = Section
+    fields = '__all__'
+    success_url = '/dashboard/sections'
 
 
 class SectionUpdateView(PermittedDashboardUpdateView):
     model = Section
+    fields = '__all__'
+    success_url = '/dashboard/sections'
 
 
 class SectionDeleteView(PermittedDashboardDeleteView):
@@ -197,10 +217,14 @@ class GalleryDetailView(PermittedDashboardDetailView):
 
 class GalleryCreateView(PermittedDashboardCreateView):
     model = Gallery
+    fields = '__all__'
+    success_url = '/dashboard/gallery'
 
 
 class GalleryUpdateView(PermittedDashboardUpdateView):
     model = Gallery
+    fields = '__all__'
+    success_url = '/dashboard/gallery'
 
 
 class GalleryDeleteView(PermittedDashboardDeleteView):

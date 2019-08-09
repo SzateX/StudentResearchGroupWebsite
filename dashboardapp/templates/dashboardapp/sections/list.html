@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>Sekcje</h1>
+{% for section in sections %}
+    {{ section.title }}
+    <a href="{% url 'section_detail' section.pk %}">Szczegóły</a>
+    <a href="{% url 'section_edit' section.pk %}">Edytuj</a>
+    <a href="{% url 'section_delete' section.pk %}">Usuń</a><br><br>
+{% endfor %}
+<a href="{% url 'section_create'%}">Dodaj</a>
+</body>
+</html>

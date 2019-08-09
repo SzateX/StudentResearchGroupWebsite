@@ -13,7 +13,7 @@ def assign_permissions_to_instance(permissions: list, user, instance):
 
 def assign_all_perms_to_creator_and_staff(instance):
     permissions = ["%s_%s" % (perm, type(instance).__name__.lower()) for perm in ["add", "change", "delete", "view"]]
-    assign_permissions_to_instance(permissions, instance.creator, instance)
+    assign_permissions_to_instance(permissions, instance.creator.user, instance)
     for user in User.objects.filter(is_staff=True):
         assign_permissions_to_instance(permissions, user, instance)
 
