@@ -48,4 +48,5 @@ urlpatterns = [
         name='gallery_edit'),
     url(r'^gallery/(?P<pk>\d+)/delete$', GalleryDeleteView.as_view(),
         name='gallery_delete'),
+    url(r'^hardware_rentals/$', HardwareRentalView.as_view(), name='hardware_rental')
 ]

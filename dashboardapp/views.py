@@ -1,10 +1,12 @@
+from django.db.models import Max
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views.generic import *
+from django.views.generic.list import BaseListView
 from guardian.mixins import PermissionListMixin, PermissionRequiredMixin, \
     LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from db.models import *
-
 
 login_url = '/dashboard/login'
 
@@ -24,7 +26,8 @@ class StrippedDashboardListView(LoginRequiredMixin, PermissionListMixin,
         return self.model.__name__.lower() + "s"
 
 
-class PermittedDashboardListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
+class PermittedDashboardListView(LoginRequiredMixin, PermissionRequiredMixin,
+                                 ListView):
     login_url = login_url
     raise_exception = True
 
@@ -39,7 +42,8 @@ class PermittedDashboardListView(LoginRequiredMixin, PermissionRequiredMixin, Li
         return self.model.__name__.lower() + "s"
 
 
-class PermittedDashboardDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
+class PermittedDashboardDetailView(LoginRequiredMixin, PermissionRequiredMixin,
+                                   DetailView):
     login_url = login_url
     raise_exception = True
 
@@ -65,7 +69,8 @@ class PermittedDashboardCreateView(LoginRequiredMixin, CreateView):
         return self.model.__name__.lower()
 
 
-class PermittedDashboardUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+class PermittedDashboardUpdateView(LoginRequiredMixin, PermissionRequiredMixin,
+                                   UpdateView):
     login_url = login_url
     raise_exception = True
 
@@ -80,7 +85,8 @@ class PermittedDashboardUpdateView(LoginRequiredMixin, PermissionRequiredMixin, 
         return self.model.__name__.lower()
 
 
-class PermittedDashboardDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+class PermittedDashboardDeleteView(LoginRequiredMixin, PermissionRequiredMixin,
+                                   DeleteView):
     login_url = login_url
     raise_exception = True
 
@@ -137,6 +143,52 @@ class ArticleUpdateView(PermittedDashboardUpdateView):
 
 class ArticleDeleteView(PermittedDashboardDeleteView):
     model = Article
+
+
+class HardwareRentalView(LoginRequiredMixin, ListView):
+    template_name = 'dashboardapp/hardware_rentals/list.html'
+    login_url = login_url
+
+    def get_queryset(self):
+        pass
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = {
+            'rented_by_user': Hardware.objects.filter(
+                rentals__user=Profile.objects.get(user=self.request.user),
+                rentals__rental_date__isnull=False,
+                rentals__return_date__isnull=True),
+            'requested_by_user': Hardware.objects.filter(
+                rentals__user=Profile.objects.get(user=self.request.user),
+                rentals__rental_date__isnull=True,
+                rentals__return_date__isnull=True),
+            'rented_by_others': Hardware.objects.filter(
+                rentals__rental_date__isnull=False,
+                rentals__return_date__isnull=True).exclude(
+                rentals__user=Profile.objects.get(user=self.request.user)),
+            'requested_by_others': Hardware.objects.filter(
+                rentals__rental_date__isnull=True,
+                rentals__return_date__isnull=True).exclude(
+                rentals__user=Profile.objects.get(user=self.request.user)),
+            'not_rented': [x for x in
+                           HardwareRental.objects.values('hardware').annotate(
+                               latest_return_date=Max(
+                                   'return_date'))] + Hardware.objects.filter(
+                rentals__isnull=True)[::1]
+        }
+        return context
+
+
+class HardwareRentalCreateView(LoginRequiredMixin, CreateView):
+    def get_form(self, form_class=None):
+        return None
+
+    def create_rental(self, request, *args, **kwargs):
+        self.object = HardwareRental(user=Profile.objects.get(user=request.user), hardware_id=request)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def post(self, request, *args, **kwargs):
+        return self.create_rental(request, args, kwargs)
 
 
 class HardwareListView(PermittedDashboardListView):
@@ -205,8 +257,8 @@ class SectionUpdateView(PermittedDashboardUpdateView):
 
 class SectionDeleteView(PermittedDashboardDeleteView):
     model = Section
-    
-    
+
+
 class GalleryListView(StrippedDashboardListView):
     model = Gallery
 
